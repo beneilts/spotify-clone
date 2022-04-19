@@ -69,21 +69,23 @@ function Player() {
         })
     }
 
-    const handleSkipToNext = () => {
-        // spotifyApi.getMyCurrentPlayingTrack().then((data) => {
-        //     console.log("Current Track:", data.body)
-        // }).catch((err) => {
-        //     console.log("Skip to next error!", err)
-        // })
+    const handleSkip = (toNext) => {
+        if (toNext===true) {
+            spotifyApi.skipToNext()
+        }else {spotifyApi.skipToPrevious()}
 
-        spotifyApi.skipToNext({}).then(() => {
-            console.log("Skip to next")
+        setTimeout(() => {
+            spotifyApi.getMyCurrentPlayingTrack().then((data) => {
+                console.log("Setting Track:", data.body.item)
+                setCurrentTrackId(data.body.item.id)
+            }).catch((err) => {
+                console.log("Couldn't get current track after skipping!", err)
+            })
+
             if (!isPlaying){
                 setIsPlaying(true)
             }
-        }).catch((err) => {
-            console.log("Skip to next error!", err)
-        })
+        }, 500);
     }
 
     const handleMuteUnmute = () => {
@@ -109,7 +111,7 @@ function Player() {
             {/* Center */}
             <div className="flex items-center justify-evenly">
                 <SwitchHorizontalIcon className="button"/>
-                <RewindIcon className="button"/> {/* #FIXME API functionality does not work*/}
+                <RewindIcon className="button" onClick={()=>handleSkip()}/> {/* #FIXME API functionality does not work*/}
 
                 {isPlaying ? (
                     <PauseIcon className="button w-10 h-10 text-white" onClick={handlePlayPause}/>
@@ -117,7 +119,7 @@ function Player() {
                     <PlayIcon className="button w-10 h-10 text-white" onClick={handlePlayPause}/>
                 )}
 
-                <FastForwardIcon className="button" onClick={handleSkipToNext}/>
+                <FastForwardIcon className="button" onClick={()=>handleSkip(true)}/>
                 <ReplyIcon className="button"/>
             </div>
 
