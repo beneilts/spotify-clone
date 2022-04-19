@@ -69,6 +69,23 @@ function Player() {
         })
     }
 
+    const handleSkipToNext = () => {
+        // spotifyApi.getMyCurrentPlayingTrack().then((data) => {
+        //     console.log("Current Track:", data.body)
+        // }).catch((err) => {
+        //     console.log("Skip to next error!", err)
+        // })
+
+        spotifyApi.skipToNext({}).then(() => {
+            console.log("Skip to next")
+            if (!isPlaying){
+                setIsPlaying(true)
+            }
+        }).catch((err) => {
+            console.log("Skip to next error!", err)
+        })
+    }
+
     const handleMuteUnmute = () => {
         if (volume != 0) {
             setVolume(0)
@@ -100,7 +117,7 @@ function Player() {
                     <PlayIcon className="button w-10 h-10 text-white" onClick={handlePlayPause}/>
                 )}
 
-                <FastForwardIcon className="button"/>
+                <FastForwardIcon className="button" onClick={handleSkipToNext}/>
                 <ReplyIcon className="button"/>
             </div>
 

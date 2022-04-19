@@ -1,19 +1,30 @@
 import useSpotify from "../hooks/useSpotify"
-import { useRecoilState } from "recoil"
+import { useRecoilState, useRecoilValue } from "recoil"
 import { currentTrackIdState, isPlayingState } from "../atoms/songAtom"
+import { playlistState } from "../atoms/playlistAtom"
 
 function Song({order, track}) {
     const spotifyApi = useSpotify()
+    const playlist = useRecoilValue(playlistState) // Read only value
     const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
     const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState)
 
+    //console.log(track)
+
     const playSong = () => {
         console.log(">> playing song")
+        console.log(track.track.uri)
         setCurrentTrackId(track.track.id)
         setIsPlaying(true)
         spotifyApi.play({
             // URI => Uniform Resource Identifier
-            uris: [track.track.uri]
+            // Can only use either context_uri or uris. Can not use both.
+                // context_uri: used for playing playlists and albums
+                // uris: an array of track uris to play
+            context_uri: playlist.uri,
+            offset: {
+                position: order
+            }
         })
     }
 
