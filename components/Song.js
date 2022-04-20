@@ -15,7 +15,7 @@ function Song({order, track}) {
         if (track.track.id == currentTrackId){
             setNameColor("text-green-500")
         }else {
-            setNameColor("text-color")
+            setNameColor("text-white")
         }
     }, [currentTrackId])
     

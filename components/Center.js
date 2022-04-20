@@ -31,9 +31,12 @@ function Center() {
     }, [playlistId])
 
     useEffect(() => {
-        spotifyApi.getPlaylist(playlistId).then((data) => {
-            setPlaylist(data.body)
-        }).catch(error => console.log("Could not get playlist!", error))
+        if (spotifyApi.getAccessToken()) {
+            spotifyApi.getPlaylist(playlistId).then((data) => {
+                console.log("PLAYLIST:", data.body)
+                setPlaylist(data.body)
+            }).catch(error => console.log("Could not get playlist!", error))
+        }
     }, [spotifyApi, playlistId])
 
     return (

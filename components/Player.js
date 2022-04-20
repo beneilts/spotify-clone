@@ -24,6 +24,9 @@ function Player() {
     const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState)
     const [volume, setVolume] = useState(50)
     
+    const [shuffleState, setShuffleState] = useState(false)
+    const [repeatState, setRepeatState] = useState("off")
+
     const fetchCurrentSong = () => {
         if (!songInfo){
             spotifyApi.getMyCurrentPlayingTrack().then(data => {
@@ -37,6 +40,19 @@ function Player() {
         }
     }
 
+    // Initialize shuffState and repeatState
+    useEffect(() => {
+        if (spotifyApi.getAccessToken()) {
+            spotifyApi.getMyCurrentPlaybackState().then((data) => {
+                setShuffleState(data.body?.shuffle_state)
+                setRepeatState(data.body?.repeat_state)
+            }).catch(err => console.log(err))
+        }else {
+            console.log("NO TOKEN")
+        }
+    }, [])
+
+    // Handle updating the song info and volume initialization
     useEffect(() => {
         if (spotifyApi.getAccessToken() && !currentTrackId){
             // fetch the song info
@@ -45,17 +61,36 @@ function Player() {
         }
     }, [currentTrackId, spotifyApi, session])
 
+    // Handle volume change input
     useEffect(() => {
         if (volume >= 0 && volume <= 100){
             debounceAdjustVolume(volume)
         }
     }, [volume])
 
+    // Debounce volume API calls 
     const debounceAdjustVolume = useCallback(
         debounce((volume) => {
-            spotifyApi.setVolume(volume).catch((err) => {})
+            if (spotifyApi.getAccessToken()) {
+                spotifyApi.setVolume(volume).catch((err) => {console.log("Could not set volume!", err)})
+            }
         }, 500)
     , [])
+
+    const handleShuffle = () => {
+        spotifyApi.setShuffle(!shuffleState)
+        setShuffleState(!shuffleState)
+    }
+
+    const handleRepeat = () => {
+        if (repeatState === "off") {
+            spotifyApi.setRepeat("context")
+            setRepeatState("context")
+        }else {
+            spotifyApi.setRepeat("off")
+            setRepeatState("off")
+        }
+    }
 
     const handlePlayPause = () => {
         spotifyApi.getMyCurrentPlaybackState().then((data) => {
@@ -76,7 +111,6 @@ function Player() {
 
         setTimeout(() => {
             spotifyApi.getMyCurrentPlayingTrack().then((data) => {
-                console.log("Setting Track:", data.body.item)
                 setCurrentTrackId(data.body.item.id)
             }).catch((err) => {
                 console.log("Couldn't get current track after skipping!", err)
@@ -110,7 +144,7 @@ function Player() {
 
             {/* Center */}
             <div className="flex items-center justify-evenly">
-                <SwitchHorizontalIcon className="button"/>
+                <SwitchHorizontalIcon className={`button ${shuffleState ? "text-green-500 hover:text-green-500" : "hover:text-white"}`} onClick={handleShuffle}/>
                 <RewindIcon className="button" onClick={()=>handleSkip()}/> {/* #FIXME API functionality does not work*/}
 
                 {isPlaying ? (
@@ -120,7 +154,7 @@ function Player() {
                 )}
 
                 <FastForwardIcon className="button" onClick={()=>handleSkip(true)}/>
-                <ReplyIcon className="button"/>
+                <ReplyIcon className={`button ${(repeatState === "context") ? "text-green-500 hover:text-green-500" : "hover:text-white"}`} onClick={handleRepeat}/>
             </div>
 
             {/* Right */}
@@ -128,7 +162,7 @@ function Player() {
                 {volume != 0 ? (
                     <VolumeUpIcon className="button" onClick={handleMuteUnmute}/>
                 ): (
-                    <VolumeOffIcon className="button" onClick={handleMuteUnmute}/>
+                    <VolumeOffIcon className="button " onClick={handleMuteUnmute}/>
                 )}  
                 <input className="w-14 md:w-28 accent-green-500" type="range" value={volume} min={0} max={100} onChange={(e) => setVolume(Number(e.target.value))}/>      
             </div>
