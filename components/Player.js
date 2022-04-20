@@ -130,7 +130,7 @@ function Player() {
                 ): (
                     <VolumeOffIcon className="button" onClick={handleMuteUnmute}/>
                 )}  
-                <input className="w-14 md:w-28" type="range" value={volume} min={0} max={100} onChange={(e) => setVolume(Number(e.target.value))}/>      
+                <input className="w-14 md:w-28 accent-green-500" type="range" value={volume} min={0} max={100} onChange={(e) => setVolume(Number(e.target.value))}/>      
             </div>
         </div>
     )

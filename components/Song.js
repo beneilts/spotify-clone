@@ -2,14 +2,23 @@ import useSpotify from "../hooks/useSpotify"
 import { useRecoilState, useRecoilValue } from "recoil"
 import { currentTrackIdState, isPlayingState } from "../atoms/songAtom"
 import { playlistState } from "../atoms/playlistAtom"
+import { useEffect, useState } from "react"
 
 function Song({order, track}) {
     const spotifyApi = useSpotify()
     const playlist = useRecoilValue(playlistState) // Read only value
     const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
     const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState)
+    const [nameColor, setNameColor] = useState("text-white")
 
-    //console.log(track)
+    useEffect(() => {
+        if (track.track.id == currentTrackId){
+            setNameColor("text-green-500")
+        }else {
+            setNameColor("text-color")
+        }
+    }, [currentTrackId])
+    
 
     const playSong = () => {
         console.log(">> playing song")
@@ -49,7 +58,7 @@ function Song({order, track}) {
                 <p>{order+1}</p>
                 <img className="h-10 w-10" src={track.track.album.images[0].url}/>
                 <div className="w-36 lg:w-64">
-                    <p className="text-white truncate">{track.track.name}</p>
+                    <p className={`${nameColor} truncate`}>{track.track.name}</p>
                     <p className="truncate">{track.track.artists[0].name}</p>
                 </div>
             </div>
