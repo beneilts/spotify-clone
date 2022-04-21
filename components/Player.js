@@ -16,6 +16,14 @@ import {
     HeartIcon as HeartIconSolid
 } from "@heroicons/react/solid"
 
+function MillisToMinutesAndSeconds(millis){
+    const minutes = Math.floor(millis / 60000)
+    const seconds = ((millis % 60000) / 1000).toFixed(0)
+    return seconds == 60
+        ? minutes + 1 + ":00"
+        : minutes + ":" + (seconds < 10 ? "0" : "") + seconds
+}
+
 function Player() {
     const spotifyApi = useSpotify()
     const songInfo = useSongInfo()
@@ -23,6 +31,7 @@ function Player() {
     const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
     const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState)
     const [volume, setVolume] = useState(50)
+    const [songProgress, setSongProgress] = useState(50)
     
     const [shuffleState, setShuffleState] = useState(false)
     const [repeatState, setRepeatState] = useState("off")
@@ -30,7 +39,7 @@ function Player() {
     const fetchCurrentSong = () => {
         if (!songInfo){
             spotifyApi.getMyCurrentPlayingTrack().then(data => {
-                console.log("Now playing: ", data.body?.item)
+                //console.log("Now playing: ", data.body?.item)
                 setCurrentTrackId(data.body?.item?.id)
 
                 spotifyApi.getMyCurrentPlaybackState().then((data) => {
@@ -40,17 +49,18 @@ function Player() {
         }
     }
 
-    // Initialize shuffState and repeatState
+    // Initialize
     useEffect(() => {
         if (spotifyApi.getAccessToken()) {
             spotifyApi.getMyCurrentPlaybackState().then((data) => {
                 setShuffleState(data.body?.shuffle_state)
                 setRepeatState(data.body?.repeat_state)
+                setSongProgress(data.body?.progress_ms)
+                setIsPlaying(data.body?.is_playing)
+                console.log(data.body)
             }).catch(err => console.log(err))
-        }else {
-            console.log("NO TOKEN")
         }
-    }, [])
+    }, [session, spotifyApi])
 
     // Handle updating the song info and volume initialization
     useEffect(() => {
@@ -73,6 +83,18 @@ function Player() {
         debounce((volume) => {
             if (spotifyApi.getAccessToken()) {
                 spotifyApi.setVolume(volume).catch((err) => {console.log("Could not set volume!", err)})
+            }
+        }, 500)
+    , [])
+
+    // Debounce seek API calls for changing song progress
+    const debounceSetProgress = useCallback(
+        debounce((progress, songDuration) => {
+            console.log("TRYING")
+            if (progress >= 0 && progress <= songDuration && spotifyApi.getAccessToken()) {
+                console.log("SETTING PROGRESS:", progress)
+                console.log("Song Duration:", songDuration)
+                spotifyApi.seek(progress).catch((err) => {console.log("Could not set song progress!", err)})
             }
         }, 500)
     , [])
@@ -143,18 +165,26 @@ function Player() {
             </div>
 
             {/* Center */}
-            <div className="flex items-center justify-evenly">
-                <SwitchHorizontalIcon className={`button ${shuffleState ? "text-green-500 hover:text-green-500" : "hover:text-white"}`} onClick={handleShuffle}/>
-                <RewindIcon className="button" onClick={()=>handleSkip()}/> {/* #FIXME API functionality does not work*/}
+            <div className="flex flex-col justify-center space-y-2">
+                <div className="flex items-center justify-center space-x-5">
+                    <SwitchHorizontalIcon className={`button ${shuffleState ? "text-green-500 hover:text-green-500" : "hover:text-white"}`} onClick={handleShuffle}/>
+                    <RewindIcon className="button" onClick={()=>handleSkip()}/> {/* #FIXME API functionality does not work*/}
 
-                {isPlaying ? (
-                    <PauseIcon className="button w-10 h-10 text-white" onClick={handlePlayPause}/>
-                ): (
-                    <PlayIcon className="button w-10 h-10 text-white" onClick={handlePlayPause}/>
-                )}
+                    {isPlaying ? (
+                        <PauseIcon className="button w-10 h-10 text-white" onClick={handlePlayPause}/>
+                    ): (
+                        <PlayIcon className="button w-10 h-10 text-white" onClick={handlePlayPause}/>
+                    )}
 
-                <FastForwardIcon className="button" onClick={()=>handleSkip(true)}/>
-                <ReplyIcon className={`button ${(repeatState === "context") ? "text-green-500 hover:text-green-500" : "hover:text-white"}`} onClick={handleRepeat}/>
+                    <FastForwardIcon className="button" onClick={()=>handleSkip(true)}/>
+                    <ReplyIcon className={`button ${(repeatState === "context") ? "text-green-500 hover:text-green-500" : "hover:text-white"}`} onClick={handleRepeat}/>
+                </div>
+
+                <div className="flex items-center justify-center text-gray-400 text-sm space-x-2">
+                    <p>{MillisToMinutesAndSeconds(songProgress)}</p>
+                    <input className="h-1 w-5/6 accent-green-500" type="range" value={songProgress} min={0} max={songInfo?.duration_ms ? songInfo?.duration_ms : (songProgress + 1000)} onChange={(e) => setSongProgress(Number(e.target.value))} onMouseUp={()=>debounceSetProgress(songProgress, songInfo?.duration_ms)}/>
+                    <p>{songInfo?.duration_ms ? MillisToMinutesAndSeconds(songInfo?.duration_ms) : "--"}</p>
+                </div>
             </div>
 
             {/* Right */}
