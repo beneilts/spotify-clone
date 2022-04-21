@@ -17,6 +17,7 @@ function useSpotify() {
                 signIn()
             }
 
+            //console.log("!! SETTING TOKEN")
             spotifyApi.setAccessToken(session.user.accessToken)
         }
     }, [session])

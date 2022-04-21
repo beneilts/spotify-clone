@@ -33,7 +33,7 @@ function Center() {
     useEffect(() => {
         if (spotifyApi.getAccessToken()) {
             spotifyApi.getPlaylist(playlistId).then((data) => {
-                console.log("PLAYLIST:", data.body)
+                //console.log("PLAYLIST:", data.body)
                 setPlaylist(data.body)
             }).catch(error => console.log("Could not get playlist!", error))
         }

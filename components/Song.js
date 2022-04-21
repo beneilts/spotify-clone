@@ -21,8 +21,6 @@ function Song({order, track}) {
     
 
     const playSong = () => {
-        console.log(">> playing song")
-        console.log(track.track.uri)
         setCurrentTrackId(track.track.id)
         setIsPlaying(true)
         spotifyApi.play({
