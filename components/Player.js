@@ -31,23 +31,39 @@ function Player() {
     const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
     const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState)
     const [volume, setVolume] = useState(50)
-    const [songProgress, setSongProgress] = useState(50)
-    
+    const [songProgress, setSongProgress] = useState(0)
     const [shuffleState, setShuffleState] = useState(false)
     const [repeatState, setRepeatState] = useState("off")
 
     const fetchCurrentSong = () => {
-        if (!songInfo){
-            spotifyApi.getMyCurrentPlayingTrack().then(data => {
-                //console.log("Now playing: ", data.body?.item)
-                setCurrentTrackId(data.body?.item?.id)
-
-                spotifyApi.getMyCurrentPlaybackState().then((data) => {
-                    setIsPlaying(data.body?.is_playing)
-                })
-            })
-        }
+        spotifyApi.getMyCurrentPlayingTrack().then(data => {
+            setCurrentTrackId(data.body?.item?.id)
+        })
     }
+
+    // Track the progress of the currently playing song
+    useEffect(() => {
+        let interval = null
+      
+        if (isPlaying){
+            interval = setInterval(() => {
+                setSongProgress((songProgress) => songProgress + 1000)
+            }, 1000)
+        } else {
+            clearInterval(interval)
+        }
+
+        return () => {
+            clearInterval(interval)
+        }
+    }, [isPlaying])
+
+    // Track songProgress and update songInfo when song ends
+    useEffect(() => {
+        if (songProgress > songInfo?.duration_ms){
+            fetchCurrentSong()
+        }
+    }, [songProgress, songInfo])
 
     // Initialize
     useEffect(() => {
@@ -57,19 +73,27 @@ function Player() {
                 setRepeatState(data.body?.repeat_state)
                 setSongProgress(data.body?.progress_ms)
                 setIsPlaying(data.body?.is_playing)
-                console.log(data.body)
+                //console.log(data.body)
             }).catch(err => console.log(err))
-        }
-    }, [session, spotifyApi])
 
-    // Handle updating the song info and volume initialization
-    useEffect(() => {
-        if (spotifyApi.getAccessToken() && !currentTrackId){
-            // fetch the song info
-            fetchCurrentSong()
-            setVolume(50)
+            if (!currentTrackId){
+                // fetch the song info
+                fetchCurrentSong()
+                setVolume(50)
+            }
         }
-    }, [currentTrackId, spotifyApi, session])
+    }, [currentTrackId, session, spotifyApi])
+
+    // Handle songInfo change
+    useEffect(() => {
+        setTimeout(() => {
+            spotifyApi.getMyCurrentPlaybackState().then((data) => {
+                setSongProgress(data.body?.progress_ms)
+            }).catch((err) => {
+                console.log("Couldn't get current track!", err)
+            })
+        }, 500);
+    }, [songInfo, spotifyApi, session])
 
     // Handle volume change input
     useEffect(() => {
@@ -90,10 +114,7 @@ function Player() {
     // Debounce seek API calls for changing song progress
     const debounceSetProgress = useCallback(
         debounce((progress, songDuration) => {
-            console.log("TRYING")
             if (progress >= 0 && progress <= songDuration && spotifyApi.getAccessToken()) {
-                console.log("SETTING PROGRESS:", progress)
-                console.log("Song Duration:", songDuration)
                 spotifyApi.seek(progress).catch((err) => {console.log("Could not set song progress!", err)})
             }
         }, 500)
