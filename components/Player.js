@@ -47,7 +47,13 @@ function Player() {
       
         if (isPlaying){
             interval = setInterval(() => {
-                setSongProgress((songProgress) => songProgress + 1000)
+                setSongProgress((songProgress) => {
+                    if (songProgress < songInfo?.duration_ms) {
+                        return songProgress + 1000
+                    } else {
+                        return songProgress
+                    }
+                })
             }, 1000)
         } else {
             clearInterval(interval)
@@ -67,20 +73,19 @@ function Player() {
 
     // Initialize
     useEffect(() => {
-        if (spotifyApi.getAccessToken()) {
+        if (!currentTrackId && spotifyApi.getAccessToken()) {
+            // Set data from the playback state
             spotifyApi.getMyCurrentPlaybackState().then((data) => {
                 setShuffleState(data.body?.shuffle_state)
                 setRepeatState(data.body?.repeat_state)
                 setSongProgress(data.body?.progress_ms)
                 setIsPlaying(data.body?.is_playing)
                 //console.log(data.body)
-            }).catch(err => console.log(err))
-
-            if (!currentTrackId){
-                // fetch the song info
-                fetchCurrentSong()
-                setVolume(50)
-            }
+            }).catch(err => console.log("Could not get playback state!", err))
+            
+            // fetch the song info
+            fetchCurrentSong()
+            setVolume(50)
         }
     }, [currentTrackId, session, spotifyApi])
 
