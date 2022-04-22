@@ -37,7 +37,7 @@ function Center() {
                 setPlaylist(data.body)
             }).catch(error => console.log("Could not get playlist!", error))
         }
-    }, [spotifyApi, playlistId])
+    }, [spotifyApi, playlistId, session])
 
     return (
         // #TODO: style the scroll bar instead of hiding it
