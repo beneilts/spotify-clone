@@ -32,20 +32,44 @@ function Center() {
 
     useEffect(() => {
         if (spotifyApi.getAccessToken()) {
-            spotifyApi.getPlaylist(playlistId).then((data) => {
-                //console.log("PLAYLIST:", data.body)
-                setPlaylist(data.body)
-            }).catch(error => console.log("Could not get playlist!", error))
+            if (playlistId === "liked"){
+                spotifyApi.getMySavedTracks().then((data) => {
+                    let playlist = {
+                        id: "liked",
+                        images: [{url:"https://i.pinimg.com/236x/fe/5c/36/fe5c36b8b4cbaa728f3c03a311e002cb.jpg"}],
+                        name: "Liked Songs",
+                        public: false,
+                        uri: "",
+                        tracks: {items: data.body?.items }
+                    }
+                    setPlaylist(playlist)
+                }).catch(error => console.log("Could not get playlist!", error))
+            } else {
+                spotifyApi.getPlaylist(playlistId).then((data) => {
+                    console.log("PLAYLIST:", data.body)
+                    setPlaylist(data.body)
+                }).catch(error => console.log("Could not get playlist!", error))
+            }
         }
     }, [spotifyApi, playlistId, session])
+
+    const handleLogoutHover = (isHover) => {
+        let userName = document.getElementById('userName')
+        console.log("hover:", userName)
+        if (isHover) {
+            userName.innerHTML = "Logout"
+        }else {
+            userName.innerHTML = session?.user.name
+        }
+    }
 
     return (
         // #TODO: style the scroll bar instead of hiding it
         <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide">
             <header className="absolute top-5 right-8 text-white">
-                <div onClick={() => signOut()} className="flex items-center bg-black space-x-3 opacity-90 hover:opacity-80 cursor-pointer rounded-full p-1 pr-2">
+                <div onClick={() => signOut()} onMouseOver={()=>handleLogoutHover(true)} onMouseOut={()=>handleLogoutHover(false)} className="flex items-center bg-black space-x-3 opacity-90 hover:opacity-80 cursor-pointer rounded-full p-1 pr-2">
                     <img className="rounded-full w-10 h-10" src={session?.user.image} alt=""/>
-                    <h2>{session?.user.name}</h2>
+                    <h2 id="userName">{session?.user.name}</h2>
                     <ChevronDownIcon className="h-5 w-5"/>
                 </div>
             </header>
