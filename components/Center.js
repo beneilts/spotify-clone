@@ -22,6 +22,8 @@ const colors = [
     "from-purplee-500"
 ]
 
+const defaultPlaylistImage = "https://community.spotify.com/t5/image/serverpage/image-id/55829iC2AD64ADB887E2A5/image-size/large?v=v2&px=999"
+
 function Center() {
     const spotifyApi = useSpotify()
     const {data: session} = useSession()
@@ -97,7 +99,7 @@ function Center() {
             </header>
 
             <section className={`flex items-end space-x-7 bg-gradient-to-b to-black ${color} h-80 text-white p-8`}>
-                <img className="h-44 w-44 shadow-2xl" src={playlist?.images?.[0]?.url} alt=""/>
+                <img className="h-44 w-44 shadow-2xl" src={playlist?.images?.[0]?.url || defaultPlaylistImage} alt=""/>
 
                 <div>
                     {/* playlist.public does not seem to return the correct value. Maybe a bug with the API? */}
