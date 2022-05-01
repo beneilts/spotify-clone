@@ -24,6 +24,20 @@ function Sidebar() {
         setPlaylistId("liked")
     }
 
+    const handleCreatePlaylist = () => {
+        spotifyApi.createPlaylist(`My Playlist #${playlists.length+1}`).then(() => {
+            setTimeout(() => {
+                if (spotifyApi.getAccessToken()) {
+                    spotifyApi.getUserPlaylists().then((data) => {
+                        setPlaylists(data.body.items)
+                    })
+                }
+            }, 500);
+        }).catch ((err) => {
+            console.log("Couldn't create playlist!", err)
+        })
+    }
+
     return (
         <div className="hidden md:inline-flex text-gray-500 p-5 text-xs lg:text-sm border-r border-gray-900 
                         overflow-y-scroll scrollbar-hide h-screen sm:max-w-[12rem] lg:max-w-[15rem] pb-36">
@@ -43,7 +57,7 @@ function Sidebar() {
 
                 <hr className="border-t-[0.1px] border-gray-900"/> */}
 
-                <button className="flex items-center space-x-2 hover:text-white">
+                <button onClick={handleCreatePlaylist} className="flex items-center space-x-2 hover:text-white">
                     <PlusCircleIcon className="h-5 w-5"/>
                     <p>Create Playlist</p>
                 </button>
