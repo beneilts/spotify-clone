@@ -4,8 +4,13 @@ import { useEffect, useState } from "react"
 import { shuffle } from "lodash"
 import { useRecoilValue, useRecoilState } from "recoil"
 import { playlistIdState, playlistState } from "../atoms/playlistAtom"
+import { currentTrackIdState, isPlayingState } from "../atoms/songAtom"
 import useSpotify from "../hooks/useSpotify"
 import Songs from "../components/Songs"
+import { 
+    PlayIcon,
+    PencilAltIcon,
+} from "@heroicons/react/solid"
 
 const colors = [
     "from-indigo-500",
@@ -23,6 +28,8 @@ function Center() {
     const [color, setColor] = useState(null)
     const playlistId = useRecoilValue(playlistIdState) // Read only value
     const [playlist, setPlaylist] = useRecoilState(playlistState)
+    const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState)
+    const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
 
     //console.log(playlistId)
 
@@ -55,11 +62,26 @@ function Center() {
 
     const handleLogoutHover = (isHover) => {
         let userName = document.getElementById('userName')
-        console.log("hover:", userName)
         if (isHover) {
             userName.innerHTML = "Logout"
         }else {
             userName.innerHTML = session?.user.name
+        }
+    }
+
+    const handleStartPlaylist = () => {
+        if (playlist?.tracks?.items.length === 0) return
+        setCurrentTrackId(playlist?.tracks?.items[0].track.id)
+        setIsPlaying(true)
+
+        if (playlist.id === "liked"){
+            spotifyApi.play({
+                uris: [playlist?.tracks?.items[0].track.uri],
+            })
+        }else {
+            spotifyApi.play({
+                context_uri: playlist.uri,
+            })
         }
     }
 
@@ -83,6 +105,11 @@ function Center() {
                     <h1 className="text-2xl md:text-3xl xl:text-5xl font-bold">{playlist?.name}</h1>
                 </div>
             </section>
+
+            <div className="flex px-8 space-x-3 items-center">
+                <PlayIcon className="button w-16 h-16 text-green-500 hover:text-green-500" onClick={handleStartPlaylist}/>
+                <PencilAltIcon className={`button w-8 h-8 text-gray-500 ${playlist?.id === "liked" ? "hidden" : ""}`}/>
+            </div>
 
             <div>
                 <Songs />
