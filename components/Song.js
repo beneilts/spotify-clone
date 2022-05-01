@@ -23,16 +23,27 @@ function Song({order, track}) {
     const playSong = () => {
         setCurrentTrackId(track.track.id)
         setIsPlaying(true)
-        spotifyApi.play({
-            // URI => Uniform Resource Identifier
-            // Can only use either context_uri or uris. Can not use both.
-                // context_uri: used for playing playlists and albums
-                // uris: an array of track uris to play
-            context_uri: playlist.uri,
-            offset: {
-                position: order
-            }
-        })
+
+        if (playlist.id === "liked"){
+            spotifyApi.play({
+                // URI => Uniform Resource Identifier
+                // Can only use either context_uri or uris. Can not use both.
+                    // context_uri: used for playing playlists and albums
+                    // uris: an array of track uris to play
+                uris: [track.track.uri],
+            })
+        }else {
+            spotifyApi.play({
+                // URI => Uniform Resource Identifier
+                // Can only use either context_uri or uris. Can not use both.
+                    // context_uri: used for playing playlists and albums
+                    // uris: an array of track uris to play
+                context_uri: playlist.uri,
+                offset: {
+                    position: order
+                }
+            })
+        }
     }
 
     function GetDateString(date) {
