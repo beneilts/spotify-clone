@@ -78,7 +78,7 @@ function Player() {
             spotifyApi.getMyCurrentPlaybackState().then((data) => {
                 setShuffleState(data.body?.shuffle_state)
                 setRepeatState(data.body?.repeat_state)
-                setSongProgress(data.body?.progress_ms)
+                setSongProgress(data.body?.progress_ms || 0)
                 setIsPlaying(data.body?.is_playing)
                 //console.log(data.body)
             }).catch(err => console.log("Could not get playback state!", err))
@@ -93,7 +93,7 @@ function Player() {
     useEffect(() => {
         setTimeout(() => {
             spotifyApi.getMyCurrentPlaybackState().then((data) => {
-                setSongProgress(data.body?.progress_ms)
+                setSongProgress(data.body?.progress_ms || 0)
             }).catch((err) => {
                 console.log("Couldn't get current track!", err)
             })
@@ -183,7 +183,7 @@ function Player() {
                         grid grid-cols-3 text-xs md:text-base px-2 md:px-8">
             {/* Left */}
             <div className="flex items-center space-x-4">
-                <img className="hidden md:inline h-14 w-14" src={songInfo?.album.images?.[0]?.url} alt=""/>
+                <img className={`hidden h-14 w-14 ${songInfo?.album.images?.[0]?.url ? "md:inline" : ""}`} src={songInfo?.album.images?.[0]?.url} alt=""/>
                 <div>
                     <h3 className="text-white">{songInfo?.name}</h3>
                     <p>{songInfo?.artists?.[0]?.name}</p>

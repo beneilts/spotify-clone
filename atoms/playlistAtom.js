@@ -9,3 +9,8 @@ export const playlistIdState = atom({
     key: "playlistIdState",
     default: '6RnqdI6gohWOcMlwbisZyt'
 })
+
+export const playlistModalState = atom({
+    key: "playlistModalState",
+    default: false
+})

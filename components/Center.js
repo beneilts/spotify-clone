@@ -3,7 +3,7 @@ import { signOut, useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { shuffle } from "lodash"
 import { useRecoilValue, useRecoilState } from "recoil"
-import { playlistIdState, playlistState } from "../atoms/playlistAtom"
+import { playlistIdState, playlistModalState, playlistState } from "../atoms/playlistAtom"
 import { currentTrackIdState, isPlayingState } from "../atoms/songAtom"
 import useSpotify from "../hooks/useSpotify"
 import Songs from "../components/Songs"
@@ -32,6 +32,7 @@ function Center() {
     const [playlist, setPlaylist] = useRecoilState(playlistState)
     const [isPlaying, setIsPlaying] = useRecoilState(isPlayingState)
     const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
+    const [showModal, setPlaylistModalState] = useRecoilState(playlistModalState)
 
     //console.log(playlistId)
 
@@ -55,7 +56,6 @@ function Center() {
                 }).catch(error => console.log("Could not get playlist!", error))
             } else {
                 spotifyApi.getPlaylist(playlistId).then((data) => {
-                    console.log("PLAYLIST:", data.body)
                     setPlaylist(data.body)
                 }).catch(error => console.log("Could not get playlist!", error))
             }
@@ -110,7 +110,7 @@ function Center() {
 
             <div className="flex px-8 space-x-3 items-center">
                 <PlayIcon className="button w-16 h-16 text-green-500 hover:text-green-500" onClick={handleStartPlaylist}/>
-                <PencilAltIcon className={`button w-8 h-8 text-gray-500 ${playlist?.id === "liked" ? "hidden" : ""}`}/>
+                <PencilAltIcon className={`button w-8 h-8 text-gray-500 ${playlist?.id === "liked" ? "hidden" : ""}`} onClick={() => setPlaylistModalState(true)}/>
             </div>
 
             <div>
