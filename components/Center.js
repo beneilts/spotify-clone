@@ -99,12 +99,13 @@ function Center() {
             </header>
 
             <section className={`flex items-end space-x-7 bg-gradient-to-b to-black ${color} h-80 text-white p-8`}>
-                <img className="h-44 w-44 shadow-2xl" src={playlist?.images?.[0]?.url || defaultPlaylistImage} alt=""/>
+                <img className="h-60 w-60 shadow-2xl" src={playlist?.images?.[0]?.url || defaultPlaylistImage} alt=""/>
 
                 <div>
                     {/* playlist.public does not seem to return the correct value. Maybe a bug with the API? */}
-                    <p>{playlist?.public ? 'PUBLIC PLAYLIST' : 'PRIVATE PLAYLIST'}</p>
-                    <h1 className="text-2xl md:text-3xl xl:text-5xl font-bold">{playlist?.name}</h1>
+                    <p className="font-bold">{playlist?.public ? 'PUBLIC PLAYLIST' : 'PRIVATE PLAYLIST'}</p>
+                    <h1 className="text-2xl md:text-3xl xl:text-8xl font-bold">{playlist?.name}</h1>
+                    <p className="text-gray-400 mt-6">{playlist?.description}</p>
                 </div>
             </section>
 
