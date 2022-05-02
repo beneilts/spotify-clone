@@ -3,19 +3,19 @@ import { HeartIcon } from "@heroicons/react/solid"
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { useRecoilState } from "recoil"
-import { playlistIdState } from "../atoms/playlistAtom"
+import { playlistIdState, playlistArrayState } from "../atoms/playlistAtom"
 import useSpotify from "../hooks/useSpotify"
 
 function Sidebar() {
     const spotifyApi = useSpotify()
     const {data: session, status} = useSession()
-    const [playlists, setPlaylists] = useState([])
+    const [playlists, setPlaylistArrayState] = useRecoilState(playlistArrayState)
     const [playlistId, setPlaylistId] = useRecoilState(playlistIdState) // Used for setting global state of playlistIdState
 
     useEffect(() => {
         if (spotifyApi.getAccessToken()) {
             spotifyApi.getUserPlaylists().then((data) => {
-                setPlaylists(data.body.items)
+                setPlaylistArrayState(data.body.items)
             })
         }
     }, [session, spotifyApi])
@@ -29,7 +29,7 @@ function Sidebar() {
             setTimeout(() => {
                 if (spotifyApi.getAccessToken()) {
                     spotifyApi.getUserPlaylists().then((data) => {
-                        setPlaylists(data.body.items)
+                        setPlaylistArrayState(data.body.items)
                     })
                 }
             }, 500);
@@ -40,7 +40,7 @@ function Sidebar() {
 
     return (
         <div className="hidden md:inline-flex text-gray-500 p-5 text-xs lg:text-sm border-r border-gray-900 
-                        overflow-y-scroll scrollbar-hide h-screen sm:max-w-[12rem] lg:max-w-[15rem] pb-36">
+                        overflow-y-scroll scrollbar-hide h-screen min-w-[11rem] sm:max-w-[12rem] lg:max-w-[15rem] pb-36">
             <div className="space-y-4">
                 {/* <button className="flex items-center space-x-2 hover:text-white">
                     <HomeIcon className="h-5 w-5"/>
@@ -70,7 +70,7 @@ function Sidebar() {
 
                 {/* Playlists */}
                 {playlists.map((playlist) => (
-                    <p key={playlist.id} onClick={()=>setPlaylistId(playlist.id)} className={`cursor-pointer hover:text-white ${playlist.id === playlistId ? "text-gray-200" : ""}`}>{playlist.name}</p>
+                    <p key={playlist.id} onClick={()=>setPlaylistId(playlist.id)} className={`pr-2 cursor-pointer hover:text-white ${playlist.id === playlistId ? "text-gray-200" : ""}`}>{playlist.name}</p>
                 ))}
                 
             </div>
