@@ -7,3 +7,19 @@
         @apply h-5 w-5 hover:text-white hover:scale-125 transition transform duration-100 ease-out;
     }
 }
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    box-shadow: transparent;
+    border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 10px;
+}

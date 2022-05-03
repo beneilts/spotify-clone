@@ -69,6 +69,7 @@ function Center() {
     }, [spotifyApi, playlistId, session])
 
     // When the user scrolls to the bottom, load more tracks
+    // Reference: https://github.com/SuboptimalEng/coding-tutorials/tree/main/infinite-scroller
     const handleScroll = async (e) => {
         if (!playlist.tracks?.next) return
 
@@ -143,7 +144,7 @@ function Center() {
 
     return (
         // #TODO: style the scroll bar instead of hiding it
-        <div id="center" className="flex-grow h-screen overflow-y-scroll scrollbar-hide"> {/*scrollbar-hide*/}
+        <div id="center" className="flex-grow h-screen overflow-y-scroll"> {/*scrollbar-hide*/}
             <header className="absolute top-5 right-8 text-white">
                 <div onClick={() => signOut()} onMouseOver={()=>handleLogoutHover(true)} onMouseOut={()=>handleLogoutHover(false)} className="flex items-center bg-black space-x-3 opacity-90 hover:opacity-80 cursor-pointer rounded-full p-1 pr-2">
                     <img className="rounded-full w-10 h-10" src={session?.user.image} alt=""/>
