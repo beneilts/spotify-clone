@@ -22,7 +22,6 @@ export default function Home() {
     )
 }
 
-// 2:44:00
 export async function getServerSideProps(context: GetSessionParams | undefined) {
     const session = await getSession(context)
     return {
