@@ -62,7 +62,7 @@ function Player() {
         return () => {
             clearInterval(interval)
         }
-    }, [isPlaying])
+    }, [isPlaying, songInfo])
 
     // Track songProgress and update songInfo when song ends
     useEffect(() => {

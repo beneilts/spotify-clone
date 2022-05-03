@@ -34,23 +34,29 @@ function Center() {
     const [currentTrackId, setCurrentTrackId] = useRecoilState(currentTrackIdState)
     const [showModal, setPlaylistModalState] = useRecoilState(playlistModalState)
 
+    let isFetching = false // used to prevent repeated fetching of tracks
     //console.log(playlistId)
 
     useEffect(() => {
+        const center = document.getElementById("center")
+        center.scrollTop = 0
         setColor(shuffle(colors).pop())
     }, [playlistId])
 
     useEffect(() => {
         if (spotifyApi.getAccessToken()) {
             if (playlistId === "liked"){
-                spotifyApi.getMySavedTracks().then((data) => {
+                spotifyApi.getMySavedTracks({limit: 50}).then((data) => {
                     let playlist = {
                         id: "liked",
                         images: [{url:"https://i.pinimg.com/236x/fe/5c/36/fe5c36b8b4cbaa728f3c03a311e002cb.jpg"}],
                         name: "Liked Songs",
                         public: false,
                         uri: "",
-                        tracks: {items: data.body?.items }
+                        tracks: {
+                            items: data.body.items,
+                            next: data.body.next
+                        }
                     }
                     setPlaylist(playlist)
                 }).catch(error => console.log("Could not get playlist!", error))
@@ -61,6 +67,54 @@ function Center() {
             }
         }
     }, [spotifyApi, playlistId, session])
+
+    // When the user scrolls to the bottom, load more tracks
+    const handleScroll = async (e) => {
+        if (!playlist.tracks?.next) return
+
+        const scrollHeight = e.target.scrollHeight
+        const currentHeight = Math.ceil(e.target.scrollTop + window.innerHeight)
+        const loadPoint = Math.ceil(scrollHeight * 0.8)
+
+        if (currentHeight + 1 >= loadPoint && !isFetching && spotifyApi.getAccessToken()) {
+            // Use next link to get next page of tracks
+            isFetching = true
+            const tracks = await fetch(playlist.tracks.next,
+                {
+                    headers: {
+                        Authorization: `Bearer ${spotifyApi.getAccessToken()}`,
+                        "Content-Type": 'application/json'
+                    }
+                }
+            ).then (res => {
+                return res.json()
+            }).then((data) => {
+                isFetching = false
+                let newTracks = playlist.tracks.items.concat(data.items)
+                let newPlaylist = {
+                    ...playlist, 
+                    tracks: {
+                        ...playlist.tracks,
+                        next: data.next,
+                        items: newTracks
+                    }
+                }
+                setPlaylist(newPlaylist)
+            }).catch ((err) => {
+                isFetching = false
+                console.log("Couldn't get more songs!", err)
+            })
+        }
+    };
+
+    // Connect scroll event for infinite scroll logic
+    useEffect(() => {
+        console.log("CONNECTING")
+        const center = document.getElementById("center")
+        center.addEventListener("scroll", handleScroll);
+
+        return () => center.removeEventListener('scroll', handleScroll)
+    }, [playlist]);
 
     const handleLogoutHover = (isHover) => {
         let userName = document.getElementById('userName')
@@ -89,7 +143,7 @@ function Center() {
 
     return (
         // #TODO: style the scroll bar instead of hiding it
-        <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide">
+        <div id="center" className="flex-grow h-screen overflow-y-scroll scrollbar-hide"> {/*scrollbar-hide*/}
             <header className="absolute top-5 right-8 text-white">
                 <div onClick={() => signOut()} onMouseOver={()=>handleLogoutHover(true)} onMouseOut={()=>handleLogoutHover(false)} className="flex items-center bg-black space-x-3 opacity-90 hover:opacity-80 cursor-pointer rounded-full p-1 pr-2">
                     <img className="rounded-full w-10 h-10" src={session?.user.image} alt=""/>
