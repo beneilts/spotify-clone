@@ -1,13 +1,8 @@
 import {getProviders, signIn} from "next-auth/react"
-import Head from 'next/head'
 
 function Login({providers}) {
     return (
         <div className="flex flex-col items-center bg-black min-h-screen w-full justify-center">
-            <Head>
-                <title>Login</title>
-            </Head>
-
             {/* #FIXME: replace image */}
             <img className="w-52 mb-5" src="https://links.papareact.com/9xl" alt=""/>
             {Object.values(providers).map((provider) => (
